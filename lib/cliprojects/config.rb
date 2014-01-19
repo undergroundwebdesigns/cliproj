@@ -18,10 +18,6 @@ module CliProjects
       "project_root_links" => [],
       # What to call the project's code folder:
       "code_folder" => "code",
-      # Options that will be used with "rails new PROJ_NAME" when a new project is created with the --init 'rails' option.
-      "rails_options" => "",
-      "use_mux" => true,
-      "track_hours" => true,
     }
 
     def self.opts
@@ -70,12 +66,37 @@ module CliProjects
       end
     end
 
-    def self.mux?
-      Config.opts["use_mux"] && system('which mux > /dev/null 2>&1')
+    def self.projects
+      clients_path = File.join(opts["base_path"], opts["clients_folder"])
+      projects = {}
+      clients do |client_file|
+        projects_path = File.join(clients_path, client_file, opts["projects_folder"])
+        Dir.foreach(projects_path) do |project_file|
+          next if project_file == ".." || project_file == "." || File.file?(File.join(projects_path, project_file))
+          yield project_file if block_given?
+          projects[project_file] = client_file
+        end
+      end
+      projects
+    end
+
+    def self.clients
+      clients_path = File.join(opts["base_path"], opts["clients_folder"])
+      clients = []
+      Dir.foreach(clients_path) do |client_file|
+        next if client_file == ".." || client_file == "." || File.file?(File.join(clients_path, client_file))
+        yield client_file if block_given?
+        clients << client_file
+      end
+      clients
     end
 
     def self.config_path
       File.expand_path(CONFIG_PATH)
+    end
+
+    def self.debug?
+      true
     end
 
     protected 

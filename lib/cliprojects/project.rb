@@ -5,13 +5,10 @@ module CliProjects
     option :init
     def new(client_name, project_name)
 
-      if options[:git_repo] && options[:init]
-        puts "Can't checkout a git repo AND initialize a new project! Please choose one or the other."
-        exit(1)
-      end
-
       project_path = Config.project_path(client_name, project_name)
       code_path = Config.code_path(client_name, project_name)
+
+      options[:init] = options[:init] ? options[:init].split(",") : []
 
       if File.exist?(project_path) || Dir.exist?(project_path)
         puts "Could not create project #{project_name} at #{project_path}. File or folder already exists."
@@ -29,20 +26,12 @@ module CliProjects
       end
 
       if options[:git_repo]
-        puts "Attempting to clone #{options[:git_repo]} into #{code_path}"
-        `git clone '#{options[:git_repo]}' '#{code_path}'`
+        options[:init] << 'git'
       end
 
       if options[:init]
-        case options[:init]
-        when "rails"
-          proj_folder_name = Utils.underscore(project_name)
-          puts "Creating a new rails project in #{code_path}"
-          `cd '#{code_path}' && rails new '#{proj_folder_name}' #{Config.opts["rails_options"]} && cd ./#{proj_folder_name} && git init`
-          if Config.mux?
-            puts "Creating a mux profile for #{project_name}"
-            FileUtils.cp(File.join(Config.template_path, "rails", "mux.yml"), Config.mux_path(project_name))
-          end
+        services(options[:init]).each do |service_class|
+          service_class.new(project_name, options).init
         end
       end
 
@@ -52,10 +41,20 @@ module CliProjects
     option :confirm
     def remove(project_name)
       client_name = Config.client_for_project(project_name)
+
       unless options[:confirm]
         puts "Are you sure you want to delete all files & folders for project #{project_name}? This cannot be undone!"
         puts "If you are sure, please re-run this command with the --confirm option."
         exit(1)
+      end
+
+      unless client_name
+        puts "Couldn't find a client name for #{project_name}. Are you sure it exists?"
+        exit(1)
+      end
+
+      services.each do |service_class|
+        service_class.new(project_name).clean_up
       end
 
       project_path = Config.project_path(client_name, project_name)
@@ -64,23 +63,43 @@ module CliProjects
       else
         puts "Could not find project directory at #{project_path}. Nothing to do."
       end
-
-      if File.exist? Config.mux_path(project_name)
-        File.delete Config.mux_path(project_name)
-      end
     end
 
     desc "start PROJECT_NAME", "Prepares you for working on PROJECT_NAME."
     def start(project_name)
       project_name = Utils.underscore(project_name)
-      client_name = Config.client_for_project(project_name)
       commands = []
-      commands << "mux start #{project_name}" if Config.mux?
+      services.each do |service_class|
+        commands << service_class.new(project_name).start_command
+      end
+      commands.select! {|cmd| cmd }
+
       if commands.empty?
         puts "Nothing to do, sorry. Try enabling mux?"
       else
         exec commands.join(" && ")
       end
+    end
+
+    desc "list", "Lists all projects and their associated clients."
+    def list(target_project_name = nil)
+      projects = Config.projects
+      if projects.empty?
+        puts "\nNo projects currently defined.\n\n"
+      else
+        puts "\nProjects:"
+        projects.each do |project_name, client_name|
+          puts "#{client_name.ljust(20)} - #{project_name}"
+        end
+        puts "\n\n"
+      end
+    end
+
+    protected
+
+    def services(only = nil)
+      only_class_names = only.map {|init| "CliProjects::Services::#{init.capitalize}" } if only
+      CliProjects::Services::Base.services.select {|init| !only || only_class_names.include?(init.name) }
     end
   end
 end

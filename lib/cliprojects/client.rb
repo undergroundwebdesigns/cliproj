@@ -34,5 +34,20 @@ module CliProjects
         puts "Could not find client directory at #{client_path}. Nothing to do."
       end
     end
+
+    desc "list", "Lists all clients."
+    def list
+      clients = Config.clients
+      if clients.empty?
+        puts "\nNo clients currently defined.\n\n"
+      else
+        puts "\nClients:"
+        clients.each do |client_name|
+          puts "#{client_name}"
+        end
+        puts "\n\n"
+      end
+    end
+
   end
 end
