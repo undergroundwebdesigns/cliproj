@@ -24,6 +24,15 @@ module CliProjects::Services
       @project_name_underscored = CliProjects::Utils.underscore(project_name)
     end
 
+    def set_repo_name(repo)
+      @repo_name = repo
+      self
+    end
+
+    def repo_name
+      @repo_name || raise("Repo name used but not set.")
+    end
+
     def template_path (file_name)
       @template_path ||= {}
       @template_path[file_name] ||= begin

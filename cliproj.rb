@@ -5,11 +5,7 @@ require 'yaml'
 require 'erb'
 require 'thor'
 
-require_relative 'lib/cliprojects/utils'
-require_relative 'lib/cliprojects/config'
-require_relative 'lib/cliprojects/config_management'
-require_relative 'lib/cliprojects/client'
-require_relative 'lib/cliprojects/project'
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', '*.rb')).each { |f| require f }
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', 'services', '**', '*.rb')).each { |f| require f }
 
 module CliProjects
@@ -22,6 +18,9 @@ module CliProjects
 
     desc "project SUBCOMMAND ...ARGS", "manage projects."
     subcommand "project", Project
+
+    desc "repo SUBCOMMAND ...ARGS", "manage repositories."
+    subcommand "repo", Repository
   end
 end
 

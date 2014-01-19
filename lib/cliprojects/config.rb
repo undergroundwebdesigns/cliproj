@@ -42,6 +42,11 @@ module CliProjects
       File.join(client_path(client_name), opts["projects_folder"], Utils.underscore(project_name))
     end
 
+    def self.repo_path(project_name, repo_name)
+      client_name = client_for_project(project_name)
+      File.join(project_path(client_name, project_name), opts["code_folder"], Utils.underscore(repo_name))
+    end
+
     def self.code_path(client_name, project_name)
       File.join(project_path(client_name, project_name), opts["code_folder"])
     end

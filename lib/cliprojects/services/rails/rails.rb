@@ -5,8 +5,9 @@ module CliProjects::Services
 
   class Rails < Base
     def init
-      puts "Creating a new rails project in #{code_path}"
-      `rails new '#{code_path}' #{CliProjects::Config.opts["rails_options"]}`
+      repo_path = CliProjects::Config.repo_path(project_name, repo_name)
+      puts "Creating a new rails project in #{repo_path}"
+      `rails new '#{repo_path}' #{CliProjects::Config.opts["rails_options"]}`
     end
 
     def self.available?

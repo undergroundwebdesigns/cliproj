@@ -2,6 +2,7 @@ module CliProjects
   class Project < Thor
     desc "new CLIENT_NAME, PROJECT_NAME", "Creates a new project directory for PROJECT_NAME within CLIENT_NAME, according to configured settings."
     option :git_repo
+    option :repo_name
     option :init
     def new(client_name, project_name)
 
@@ -25,16 +26,8 @@ module CliProjects
         File.symlink(File.join(project_path, link), File.join(Config.base_path, link))
       end
 
-      if options[:git_repo]
-        options[:init] << 'git'
-      end
-
-      if options[:init]
-        services(options[:init]).each do |service_class|
-          service_class.new(project_name, options).init
-        end
-      end
-
+      repo_name = options[:repo_name] || project_name
+      CliProjects::Repository.new.create(project_name, repo_name, options)
     end
 
     desc "remove PROJECT_NAME --confirm", "Removes project folder PROJECT_NAME and all subdirectories."
