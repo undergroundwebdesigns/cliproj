@@ -1,7 +1,7 @@
-module CliProjects::Services
+module CliProjects::Services::Project
   class Mux < Base
 
-    def init
+    def setup
       if File.exist? CliProjects::Config.mux_path(project_name)
         puts "Not creating a mux file for #{project_name}. File #{CliProjects::Config.mux_path(project_name)} already exists."
       else
@@ -14,7 +14,7 @@ module CliProjects::Services
       end
     end
 
-    def clean_up
+    def tear_down
       if File.exist? CliProjects::Config.mux_path(project_name)
         File.delete CliProjects::Config.mux_path(project_name)
       end

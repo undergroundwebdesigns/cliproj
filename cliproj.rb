@@ -6,7 +6,7 @@ require 'erb'
 require 'thor'
 
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', '*.rb')).each { |f| require f }
-Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', 'services', '**', '*.rb')).each { |f| require f }
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', 'services', '**', '**', '*.rb')).each { |f| require f }
 
 module CliProjects
   class CliProj < Thor
