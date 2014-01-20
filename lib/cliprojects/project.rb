@@ -96,7 +96,7 @@ module CliProjects
 
     desc "list", "Lists all projects and their associated clients."
     def list(target_project_name = nil)
-      projects = Config.projects
+      projects = Utils.projects
       if projects.empty?
         puts "\nNo projects currently defined.\n\n"
       else

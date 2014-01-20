@@ -25,7 +25,7 @@ module CliProjects
       end
 
       def base_path
-        opts["base_path"]
+        Config.opts["base_path"]
       end
 
       def clients_path
@@ -74,6 +74,7 @@ module CliProjects
 
       def projects
         projects = {}
+        return projects unless Dir.exist? base_path
         clients do |client_file|
           Dir.foreach(projects_path(client_file)) do |project_file|
             next unless non_relative_directory?(projects_path(client_file), project_file)
@@ -86,6 +87,7 @@ module CliProjects
 
       def clients
         clients = []
+        return clients unless Dir.exist? base_path
         Dir.foreach(clients_path) do |client_file|
           next unless non_relative_directory?(clients_path, client_file)
           yield client_file if block_given?
