@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.description = "Allows for the easy creation and management of a clients -> projects -> repos type directory structure, with scripts to template apps, startup scripts, time tracking etc."
   s.require_path = 'lib'
   s.executables = ['cliproj']
-  s.files       = Dir.glob("{bin,lib,config}/**/*") + %w(README.md Gemfile cliproj.gemspec)
+  s.files       = Dir.glob("{bin,lib}/**/*") + %w(README.md Gemfile cliproj.gemspec)
   s.add_dependency('thor', ">= 0.18.1")
   s.homepage    =
     "https://github.com/undergroundwebdesigns/cliproj"

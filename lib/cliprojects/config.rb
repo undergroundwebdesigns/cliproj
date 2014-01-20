@@ -1,6 +1,7 @@
 module CliProjects
   class Config
-    CONFIG_PATH = "~/.cliproj"
+    DEFAULT_CONFIG_FILE_PATH = "~/"
+    CONFIG_FILE_NAME = ".cliproj"
     DEFAULT_HASH = {
       # The base path, all other created files / folders will be within this:
       "base_path" => File.expand_path("~/business"),
@@ -31,9 +32,17 @@ module CliProjects
         end
       end
 
-
       def config_path
-        File.expand_path(CONFIG_PATH)
+        @config_path ||= find_config_path
+      end
+
+      def find_config_path
+        start_dir = `pwd`
+        while (start_dir = File.dirname(start_dir)) && start_dir != "/" do
+          file_to_try = File.join(start_dir, CONFIG_FILE_NAME)
+          return file_to_try if File.exist? file_to_try
+        end
+        File.expand_path(File.join(DEFAULT_CONFIG_FILE_PATH, CONFIG_FILE_NAME))
       end
 
       def debug?
