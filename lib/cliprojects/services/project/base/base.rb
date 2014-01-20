@@ -1,7 +1,7 @@
 module CliProjects::Services::Project
   class Base < CliProjects::Services::Base
     attr_reader :project_name, :client_name, :project_path, :client_path, :code_path
-    def initialize(project_name, options)
+    def initialize(project_name, options = {})
       super
       
       @project_name = project_name

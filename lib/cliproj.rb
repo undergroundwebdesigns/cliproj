@@ -4,6 +4,7 @@ require 'fileutils'
 require 'yaml'
 require 'erb'
 require 'thor'
+require 'harvested'
 
 require 'cliprojects/client'
 require 'cliprojects/config'

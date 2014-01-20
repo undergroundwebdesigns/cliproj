@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.executables = ['cliproj']
   s.files       = Dir.glob("{bin,lib}/**/*") + %w(README.md Gemfile cliproj.gemspec)
   s.add_dependency('thor', ">= 0.18.1")
+  s.add_dependency('harvested')
   s.homepage    =
     "https://github.com/undergroundwebdesigns/cliproj"
   s.license       = 'MIT'
