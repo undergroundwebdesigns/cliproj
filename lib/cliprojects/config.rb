@@ -70,9 +70,13 @@ module CliProjects
       if val == "true" || val == "false"
         val = val == "true"
       end
+      defaults = @type == "Global" ? DEFAULT_HASH : self.class.defaults
+      puts defaults
       opts[key] = val
-      configs_to_save = opts.select {|k,v| self.class.defaults[k] != v }
-      File.open(config_path, "w") {|f| f.write YAML.dump(configs_to_save) }
+      puts opts
+      configs_to_save = opts.select {|k,v| !defaults.key?(k) || defaults[k] != v }
+      puts configs_to_save
+      File.open(config_path, "w") {|f| f.write YAML.dump(configs_to_save) } unless configs_to_save.empty?
     end
 
     def save(path)

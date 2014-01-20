@@ -2,8 +2,8 @@ module CliProjects
   class ConfigManagement < Thor
     desc "set KEY=VALUE", "Sets config option KEY to VALUE."
     def set(key_val_string)
-      key, val = key_val_string.split("=")
-      Config.global.set_config(key, val)
+      key, val = key_val_string.split("=", 2)
+      Config.global.set(key, val)
     end
 
     desc "get KEY", "Gets the current config value for KEY, or all config values if no KEY given."
