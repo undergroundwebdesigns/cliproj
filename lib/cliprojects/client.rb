@@ -16,17 +16,18 @@ module CliProjects
         end
 
         FileUtils.mkdir_p(client_path)
-        Config.opts["client_subfolders"].each do |subfolder|
+        Config.global.opts["client_subfolders"].each do |subfolder|
           FileUtils.mkdir_p(File.join(client_path, subfolder))
         end
+        Config.client(client_name).save(File.join(client_path, Config::CONFIG_FILE_NAME))
 
-        Config.opts["client_root_links"].each do |link|
-          File.symlink(File.join(client_path, link), File.join(Config.base_path, link))
+        Config.global.opts["client_root_links"].each do |link|
+          File.symlink(File.join(client_path, link), File.join(Config.global.base_path, link))
         end
         FileUtils.mkdir_p(Utils.projects_path(client_name))
 
-        Config.set_client_services(client_name, options[:services])
-        Config.client_services(client_name).each do |service_class|
+        Config.client(client_name).set_services(options[:services])
+        Config.client(client_name).services.each do |service_class|
           service_class.new(client_name, options).setup
         end
       end
@@ -41,7 +42,7 @@ module CliProjects
         exit(1)
       end
 
-      Config.client_services(client_name).each do |service_class|
+      Config.client(client_name).services.each do |service_class|
         service_class.new(client_name).tear_down
       end
 
@@ -55,7 +56,7 @@ module CliProjects
 
     desc "list", "Lists all clients."
     def list
-      clients = Config.clients
+      clients = Config.global.clients
       if clients.empty?
         puts "\nNo clients currently defined.\n\n"
       else

@@ -23,14 +23,15 @@ module CliProjects
         end
 
         FileUtils.mkdir_p(repo_path)
+        Config.repository(repo_name, project_name).save(File.join(repo_path, Config::CONFIG_FILE_NAME))
 
         if options[:git_repo]
-          options[:services] = Config.services_to_array(options[:services])
+          options[:services] = Config.repository(repo_name, project_name).services_to_array(options[:services])
           options[:services] << 'git'
         end
 
-        Config.set_repository_services(repo_name, project_name, options[:services])
-        Config.repository_services(repo_name, project_name).each do |service_class|
+        Config.repository(repo_name, project_name).set_services(options[:services])
+        Config.repository(repo_name, project_name).services.each do |service_class|
           service_class.new(repo_name, project_name, options).setup
         end
       end
@@ -49,7 +50,7 @@ module CliProjects
         exit(1)
       end
 
-      Config.repository_services(repo_name, project_name).each do |service_class|
+      Config.repository(repo_name, project_name).services.each do |service_class|
         service_class.new(repo_name, project_name).tear_down
       end
 

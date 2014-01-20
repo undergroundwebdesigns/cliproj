@@ -7,7 +7,7 @@ module CliProjects::Services::Repository
     def setup
       repo_path = CliProjects::Utils.repository_path(repository_name, project_name)
       puts "Creating a new rails project in #{repo_path}"
-      `rails new '#{repo_path}' #{CliProjects::Config.opts["rails_options"]}`
+      `rails new '#{repo_path}' #{CliProjects::Config.global.opts["rails_options"]}`
     end
 
     def self.available?

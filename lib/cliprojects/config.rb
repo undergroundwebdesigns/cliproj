@@ -22,102 +22,106 @@ module CliProjects
     }
 
     class << self
-      def opts
-        @opts ||= begin
-          unless File.size?(config_path)
-            File.open(config_path, "a") {}
+      def global
+        @global_config ||= new(find_config_path, "Global")
+      end
+
+      def client(client_name)
+        @client_config ||= {}
+        @client_config[client_name] ||= new(find_config_path(Utils.client_path(client_name)), "Client")
+      end
+
+      def project(project_name)
+        @project_config ||= {}
+        @project_config[project_name] ||= new(find_config_path(Utils.project_path(project_name)), "Project")
+      end
+
+      def repository(repo_name, project_name)
+        @repo_config ||= {}
+        @repo_config["#{repo_name}-#{project_name}"] ||= new(find_config_path(Utils.repository_path(repo_name, project_name)), "Repository")
+      end
+
+      def find_config_path(start_dir = nil)
+        if start_dir
+          while (start_dir = File.dirname(start_dir)) && start_dir != "/" do
+            file_to_try = File.join(start_dir, CONFIG_FILE_NAME)
+            return file_to_try if File.exist? file_to_try
           end
-          config = YAML.load(File.read(config_path)) || {}
-          defaults.merge(config)
-        end
-      end
-
-      def config_path
-        @config_path ||= find_config_path
-      end
-
-      def find_config_path
-        start_dir = `pwd`
-        while (start_dir = File.dirname(start_dir)) && start_dir != "/" do
-          file_to_try = File.join(start_dir, CONFIG_FILE_NAME)
-          return file_to_try if File.exist? file_to_try
         end
         File.expand_path(File.join(DEFAULT_CONFIG_FILE_PATH, CONFIG_FILE_NAME))
       end
+    end
 
-      def debug?
-        true
-      end
+    def initialize(path, type)
+      @type = type
+      @config_path = path
+    end
 
-      def set_client_services(client_name, services)
-        services = services_to_array(services)
-        File.open(File.join(Utils.client_path(client_name), '.cliproj'), "w+") do |f|
-          f.write YAML.dump(services)
+    def opts
+      @opts ||= begin
+        unless File.size?(config_path)
+          File.open(config_path, "a") {}
         end
+        config = YAML.load(File.read(config_path)) || {}
+        defaults.merge(config)
       end
+    end
 
-      def set_project_services(project_name, services)
-        services = services_to_array(services)
-        File.open(File.join(Utils.project_path(project_name), '.cliproj'), "w+") do |f|
-          f.write YAML.dump(services)
+    def get(key)
+      opts[key]
+    end
+
+    def set(key, val)
+      if val == "true" || val == "false"
+        val = val == "true"
+      end
+      opts[key] = val
+      configs_to_save = opts.select {|k,v| defaults[k] != v }
+      File.open(config_path, "w") {|f| f.write YAML.dump(configs_to_save) }
+    end
+
+    def save(path)
+      File.open(path, "w") {|f| f.write YAML.dump(opts) }
+    end
+
+    def config_path
+      @config_path ||= find_config_path
+    end
+
+    def debug?
+      true
+    end
+
+    def set_services(services)
+      services = services_to_array(services)
+      set("services", services)
+    end
+
+    def services
+      services = get("services")
+      services.map do |service|
+        begin
+          "CliProjects::Services::#{@type}::#{service.capitalize}".constantize
+        rescue NameError
+          nil
         end
-      end
+      end.keep_if {|s| s}
+    end
 
-      def set_repository_services(repo_name, project_name, services)
-        services = services_to_array(services)
-        File.open(File.join(Utils.project_path(project_name), ".cliproj-#{repo_name}"), "w+") do |f|
-          f.write YAML.dump(services)
-        end
-      end
+    def defaults
+      DEFAULT_HASH
+    end
 
-      def client_services(client_name)
-        services = YAML.load(File.read(File.join(Utils.client_path(client_name), '.cliproj'))) || []
-        services.map do |service|
-          begin
-            "CliProjects::Services::Client::#{service.capitalize}".constantize
-          rescue NameError
-            nil
-          end
-        end.keep_if {|s| s}
-      end
-
-      def project_services(project_name)
-        services = YAML.load(File.read(File.join(Utils.project_path(project_name), '.cliproj'))) || []
-        services.map do |service|
-          begin
-            "CliProjects::Services::Project::#{service.capitalize}".constantize
-          rescue NameError
-            nil
-          end
-        end.keep_if {|s| s}
-      end
-
-      def repository_services(repo_name, project_name)
-        services = YAML.load(File.read(File.join(Utils.project_path(project_name), ".cliproj-#{repo_name}"))) || []
-        services.map do |service|
-          begin
-            Object.const_get("CliProjects::Services::Repository::#{service.capitalize}")
-          rescue NameError
-            nil
-          end
-        end.keep_if {|s| s}
-      end
-
-      def defaults
-        DEFAULT_HASH
-      end
-
-      def services_to_array(services)
-        case services
-        when Array
-          services
-        when String
-          services.split(",")
-        when nil
-          []
-        else
-          raise "Invalid services given. Should be a comma separated list (with no spaces)."
-        end
+    def services_to_array(services)
+      case services
+      when Array
+        services
+      when String
+        services.split(",")
+      when nil
+        []
+      else
+        raise "Invalid services given. Should be a comma separated list (with no spaces)."
       end
     end
   end

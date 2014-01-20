@@ -25,11 +25,11 @@ module CliProjects
       end
 
       def base_path
-        Config.opts["base_path"]
+        Config.global.opts["base_path"]
       end
 
       def clients_path
-        File.join(Config.opts["base_path"], Config.opts["clients_folder"])
+        File.join(Config.global.opts["base_path"], Config.global.opts["clients_folder"])
       end
 
       def client_path(client_name)
@@ -37,7 +37,7 @@ module CliProjects
       end
 
       def projects_path(client_name)
-        File.join(client_path(client_name), Config.opts["projects_folder"])
+        File.join(client_path(client_name), Config.global.opts["projects_folder"])
       end
 
       def project_path(project_name, client_name = nil)
@@ -46,7 +46,7 @@ module CliProjects
       end
 
       def code_path(project_name)
-        File.join(project_path(project_name), Config.opts["code_folder"])
+        File.join(project_path(project_name), Config.global.opts["code_folder"])
       end
 
       def repository_path(repo_name, project_name)

@@ -25,17 +25,18 @@ module CliProjects
         end
 
         FileUtils.mkdir_p(project_path)
-        Config.opts["project_subfolders"].each do |subfolder|
+        Config.project(project_name).opts["project_subfolders"].each do |subfolder|
           FileUtils.mkdir_p(File.join(project_path, subfolder))
         end
+        Config.project(project_name).save(File.join(project_path, Config::CONFIG_FILE_NAME))
         FileUtils.mkdir_p(Utils.code_path(project_name))
 
-        Config.opts["project_root_links"].each do |link|
+        Config.project(project_name).opts["project_root_links"].each do |link|
           File.symlink(File.join(project_path, link), File.join(Utils.base_path, link))
         end
 
-        Config.set_project_services(project_name, options[:services])
-        Config.project_services(project_name).each do |service_class|
+        Config.project(project_name).set_services(options[:services])
+        Config.project(project_name).services.each do |service_class|
           service_class.new(project_name, options).setup
         end
 
@@ -64,7 +65,7 @@ module CliProjects
         exit(1)
       end
 
-      Config.project_services(project_name).each do |service_class|
+      Config.project(project_name).services.each do |service_class|
         service_class.new(project_name).tear_down
       end
 
@@ -82,7 +83,7 @@ module CliProjects
     def start(project_name)
       project_name = Utils.underscore(project_name)
       commands = []
-      Config.project_services(project_name, with: options[:use_services], without: options[:skip_services]).each do |service_class|
+      Config.project(project_name).services.each do |service_class|
         commands << service_class.new(project_name).start_command
       end
       commands.select! {|cmd| cmd }
