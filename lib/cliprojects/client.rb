@@ -19,7 +19,6 @@ module CliProjects
         Config.global.opts["client_subfolders"].each do |subfolder|
           FileUtils.mkdir_p(File.join(client_path, subfolder))
         end
-        Config.client(client_name).save(File.join(client_path, Config::CONFIG_FILE_NAME))
 
         Config.global.opts["client_root_links"].each do |link|
           File.symlink(File.join(client_path, link), File.join(Config.global.base_path, link))

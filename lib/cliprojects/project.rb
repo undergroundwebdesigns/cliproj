@@ -28,7 +28,6 @@ module CliProjects
         Config.project(project_name).opts["project_subfolders"].each do |subfolder|
           FileUtils.mkdir_p(File.join(project_path, subfolder))
         end
-        Config.project(project_name).save(File.join(project_path, Config::CONFIG_FILE_NAME))
         FileUtils.mkdir_p(Utils.code_path(project_name))
 
         Config.project(project_name).opts["project_root_links"].each do |link|

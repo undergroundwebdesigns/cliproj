@@ -13,4 +13,4 @@ require 'cliprojects/repository'
 require 'cliprojects/utils'
 require 'cliprojects/version'
 
-Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'lib', 'cliprojects', 'services', '**', '**', '*.rb')).each { |f| require f }
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'cliprojects', 'services', '**', '**', '*.rb')).each { |f| require f }

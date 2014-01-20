@@ -23,33 +23,28 @@ module CliProjects
 
     class << self
       def global
-        @global_config ||= new(find_config_path, "Global")
+        @global_config ||= new(File.expand_path(File.join(DEFAULT_CONFIG_FILE_PATH, CONFIG_FILE_NAME)), "Global")
       end
 
       def client(client_name)
         @client_config ||= {}
-        @client_config[client_name] ||= new(find_config_path(Utils.client_path(client_name)), "Client")
+        @client_config[client_name] ||= new(File.join(Utils.client_path(client_name), CONFIG_FILE_NAME), "Client")
       end
 
       def project(project_name)
         @project_config ||= {}
-        @project_config[project_name] ||= new(find_config_path(Utils.project_path(project_name)), "Project")
+        @project_config[project_name] ||= new(File.join(Utils.project_path(project_name), CONFIG_FILE_NAME), "Project")
       end
 
       def repository(repo_name, project_name)
         @repo_config ||= {}
-        @repo_config["#{repo_name}-#{project_name}"] ||= new(find_config_path(Utils.repository_path(repo_name, project_name)), "Repository")
+        @repo_config["#{repo_name}-#{project_name}"] ||= new(File.join(Utils.code_path(project_name), "#{CONFIG_FILE_NAME}-#{repo_name}"), "Repository")
       end
 
-      def find_config_path(start_dir = nil)
-        if start_dir
-          while (start_dir = File.dirname(start_dir)) && start_dir != "/" do
-            file_to_try = File.join(start_dir, CONFIG_FILE_NAME)
-            return file_to_try if File.exist? file_to_try
-          end
-        end
-        File.expand_path(File.join(DEFAULT_CONFIG_FILE_PATH, CONFIG_FILE_NAME))
+      def defaults
+        global.opts
       end
+
     end
 
     def initialize(path, type)
@@ -63,7 +58,7 @@ module CliProjects
           File.open(config_path, "a") {}
         end
         config = YAML.load(File.read(config_path)) || {}
-        defaults.merge(config)
+        DEFAULT_HASH.merge(config)
       end
     end
 
@@ -76,7 +71,7 @@ module CliProjects
         val = val == "true"
       end
       opts[key] = val
-      configs_to_save = opts.select {|k,v| defaults[k] != v }
+      configs_to_save = opts.select {|k,v| self.class.defaults[k] != v }
       File.open(config_path, "w") {|f| f.write YAML.dump(configs_to_save) }
     end
 
@@ -101,15 +96,12 @@ module CliProjects
       services = get("services")
       services.map do |service|
         begin
-          "CliProjects::Services::#{@type}::#{service.capitalize}".constantize
-        rescue NameError
+          Object.const_get "CliProjects::Services::#{@type}::#{service.capitalize}"
+        rescue NameError => e
+          puts e.message
           nil
         end
       end.keep_if {|s| s}
-    end
-
-    def defaults
-      DEFAULT_HASH
     end
 
     def services_to_array(services)

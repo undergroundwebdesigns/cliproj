@@ -23,7 +23,6 @@ module CliProjects
         end
 
         FileUtils.mkdir_p(repo_path)
-        Config.repository(repo_name, project_name).save(File.join(repo_path, Config::CONFIG_FILE_NAME))
 
         if options[:git_repo]
           options[:services] = Config.repository(repo_name, project_name).services_to_array(options[:services])

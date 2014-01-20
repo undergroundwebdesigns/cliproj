@@ -1,7 +1,7 @@
 module CliProjects::Services::Repository
 
    # Options that will be used with "rails new PROJ_NAME" when a new project is created with the --init 'rails' option.
-  CliProjects::Config::defaults["rails_options"] = ""
+  CliProjects::Config.defaults["rails_options"] = ""
 
   class Rails < Base
     def setup
